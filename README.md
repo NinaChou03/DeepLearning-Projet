@@ -199,6 +199,72 @@ Audio textuel (AED) :
 - Corrélation de Pearson.
 
 ---
+## Modèle MOSI – Architecture DEVA
+
+### Dataset CMU-MOSI
+
+**CMU-MOSI** est un dataset d'analyse de sentiment multimodale :
+
+- **Source** : 2199 segments vidéo YouTube (monologues/critiques)
+- **Labels** : Scores de sentiment de **-3** (très négatif) à **+3** (très positif)
+- **Modalités** :
+  - **Texte** : Transcriptions manuelles
+  - **Audio** : 74 features (MFCC, pitch, loudness, jitter, shimmer)
+  - **Vision** : 35 features (Action Units faciaux)
+
+---
+
+### Pipeline du Modèle
+
+```
+1. TEXTE
+   └─ BERT → Transformer Encoder → X_t [B, 8, 768]
+
+2. AUDIO
+   ├─ Features brutes [B, 74] → Projection → X_a [B, 8, 768]
+   └─ Descriptions textuelles (pitch, loudness...) → D_a
+      └─ Enrichissement : X_a = X_a + D_a
+
+3. VISION
+   ├─ Features brutes [B, 35] → Projection → X_v [B, 8, 768]
+   └─ Descriptions AUs (smile, sadness...) → D_v
+      └─ Enrichissement : X_v = X_v + D_v
+
+4. FUSION
+   ├─ Concaténation [X_t, X_a, X_v] → Projection
+   ├─ Cross-Modal Attention (texte guide audio/vision)
+   └─ MFU : Fusion résiduelle avec poids α et β
+
+5. PRÉDICTION
+   └─ MLP → Score sentiment [-3, +3]
+```
+
+---
+
+### Composants Clés
+
+#### 1. Descriptions Émotionnelles
+
+**Audio (AED)** : Convertit les features audio en phrases
+- Exemple : *"The speaker used high pitch with loud volume. The voice quality is stable."*
+
+**Vision (VED)** : Convertit les AUs en descriptions faciales
+- Exemple : *"The person shows signs of: raised cheeks, lip corners pulled (smile)."*
+
+#### 2. Cross-Modal Attention
+
+L'audio et la vision utilisent le texte comme guide pour extraire l'information pertinente.
+
+#### 3. MFU (Minor Fusion Unit)
+
+Fusion résiduelle avec poids learnables :
+```
+H_fusion = H_prev + α·Attention(audio, texte) + β·Attention(vision, texte)
+```
+
+---
+
+
 
 ## Correction du problème du tanh() et saturation du gradient
 
@@ -271,13 +337,17 @@ La suppression du tanh est la principale raison de l’amélioration drastique d
 | MAE | 0.47 |
 | Corr | 0.95 |
 
-## Exécution
-lancer dans google collab :
 
-MOSI_Deeplearning.ipynb 
+### Différences MELD vs MOSI
 
-MELD_projet.ipynb
+| | MELD | MOSI |
+|---|------|------|
+| **Source** | Dialogues TV | Monologues YouTube |
+| **Labels** | 7 émotions discrètes | Score continu [-3,+3] |
+| **Features** | Extraction temps réel | Pré-extraites (74+35) |
+| **Task** | Classification | Régression |
 
+---
 
 ## Conclusion du Projet
 
