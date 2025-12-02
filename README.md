@@ -39,6 +39,17 @@ Le but est d'explorer comment combiner Texte + Audio + Vision pour améliorer la
 
 ✔ Comparaison sur deux datasets majeurs : MELD et CMU-MOSI
 
+## Installation : 
+
+```
+git clone https://github.com/<username>/multimodal-sentiment-analysis.git
+cd multimodal-sentiment-analysis
+
+python3 -m venv venv
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
 
 ## Technologies :
 
@@ -58,10 +69,12 @@ Sentiment : négatif / neutre / positif
 
 Chargement automatique dans le code :
 
-
+```
 import kagglehub
-
 path = kagglehub.dataset_download("zaber666/meld-dataset")
+```
+
+Cependant pour des moyens pratique nous avons opter pour telecharger le dossier complet de manière à le manipuler plus facilement. 
 
 2️⃣ CMU-MOSI
 
@@ -118,6 +131,117 @@ ACC-5	Version 5 classes (binning)
 F1 Score	F1 weighted
 MAE	Mean Absolute Error (régression)
 Corr	Corrélation de Pearson entre prédiction et vérité
+
+## Notre pipeline pour MELD : 
+
+### 1. Préparation des données
+
+1. Chargement des CSV : utterance, émotion, sentiment, IDs.
+2. Reconstruction des chemins audio/vidéo.
+3. Gestion des fichiers audio manquants ou illisibles via fallback neutre.
+4. Encapsulation dans un Dataset PyTorch + DataLoader.
+
+### 2. Encodage Texte (BERT + CEU)
+
+1. Tokenisation (BertTokenizerFast).
+2. Passage dans BERT pour obtenir les embeddings.
+3. Ajout d’un modality token.
+4. Passage dans un TransformerEncoder (CEU).
+5. Séquence finale normalisée à une longueur T fixée.
+
+### 3. Encodage Audio
+
+Audio réel (MFCC) :
+- Extraction MFCC.
+- Échantillonnage temporel sur T frames.
+- Projection linéaire vers la dimension du modèle.
+
+Audio textuel (AED) :
+- Extraction pitch, loudness, jitter, shimmer.
+- Catégorisation.
+- Création d’une phrase descriptive.
+- Encodage via BERT + CEU.
+
+### 4. Vision Symbolique (VED)
+
+- Mapping Emotion → Action Units.
+- Création d’une phrase descriptive.
+- Encodage via BERT.
+
+### 5. Construction des représentations modales
+
+- H_t0 = fc_text([X_t, D_a, D_v])
+- H_a0 = fc_audio([X_a, D_a])
+- H_v0 = fc_vision([X_v, D_v])
+- H_t = CEU(H_t0)
+
+### 6. Fusion Multimodale (MFU + CMA)
+
+1. Initialisation de la fusion multimodale.
+2. Application de plusieurs couches MFU :
+   - Att_t2a : attention texte → audio
+   - Att_t2v : attention texte → vision
+   - Mise à jour H_m = H_m + α*att_a + β*att_v
+3. Cross-modal attention finale H_fused = CMA(H_t, H_m)
+4. Pooling temporel.
+
+### 7. Tête de régression
+
+- MLP à deux couches.
+- Sortie : score réel du sentiment.
+- MSELoss.
+
+### 8. Métriques
+
+- Acc-2, Acc-3, Acc-5, Acc-7.
+- F1 score.
+- MAE.
+- Corrélation de Pearson.
+
+---
+
+## Correction du problème du tanh() et saturation du gradient
+
+### 1. Problème initial
+
+La tête du modèle utilisait :
+
+y_pred = torch.tanh(self.regressor(pooled))
+
+Conséquences :
+- Sortie bornée dans [-1,1].
+- Incapacité à atteindre les vraies valeurs des labels (ex : MOSI [-3,+3]).
+- Saturation du gradient du tanh → apprentissage quasi nul.
+- Plateau des métriques.
+
+### 2. Correction apportée
+
+Nous avons remplacé :
+```
+y_pred = torch.tanh(self.regressor(pooled))
+```
+par :
+```
+y_pred = self.regressor(pooled)
+```
+
+
+### 3. Effets observés
+
+- Alignement de l’échelle des prédictions avec les labels.
+- Disparition de la saturation des gradients.
+- Baisse significative du MAE.
+- Hausse importante des accuracies.
+- Corrélation passant de ~0 à ~0.85.
+- Courbes d'apprentissage redevenues normales.
+
+### 4. Interprétation
+
+La régression doit prédire une valeur réelle non bornée.  
+Le tanh imposait une contrainte artificielle incompatible avec les labels et bloquait l’apprentissage.  
+La suppression du tanh est la principale raison de l’amélioration drastique des performances du modèle.
+
+
 
 ## Résultats Résumés
 
