@@ -127,39 +127,46 @@ Corr	Corrélation de Pearson entre prédiction et vérité
 ## Résultats Résumés
 ✔ MELD (DEVA-like Model)
 Metric	Score
+
 ACC-2	0.94
+
 ACC-3 0.93
+
 ACC-5 0.86
+
 ACC-7 0.86
+
 F1	0.94
+
 MAE	0.26
+
 Corr	0.85
+
 Train loss 0.17
+
 
 ✔ MOSI (simple multimodal fusion)
 Metric	Score
+
 ACC-2	0.86
+
 ACC-5 0.56
+
 ACC-7 0.76
+
 F1	0.85
+
 MAE	0.47
+
 Corr	0.95
 
 
 ## Exécution
-1. Installer les dépendances :
-
-pip install torch transformers librosa kagglehub scikit-learn matplotlib
-
-3. Lancer les notebooks :
-
 lancer dans google collab :
 
 MOSI_Deeplearning.ipynb 
 MELD_projet.ipynb
 
-
-Tout se charge automatiquement.
 
 ## Conclusion du Projet
 
