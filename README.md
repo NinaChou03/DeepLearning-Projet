@@ -63,6 +63,7 @@ Sentiment : négatif / neutre / positif
 
 Chargement automatique dans le code :
 
+
 import kagglehub
 
 path = kagglehub.dataset_download("zaber666/meld-dataset")
@@ -175,6 +176,6 @@ dataset plus bruité
 
 pus de classes émotionnelles
 
-Auteurs
+## Auteurs
 Nina Tuil - Arthur Neyt - Loic Le Quellec
 Master IA & Data — 2025-2026
