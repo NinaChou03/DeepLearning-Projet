@@ -1,0 +1,8 @@
+https://www.kaggle.com/datasets/samarwarsi/cmu-mosei/data
+
+import kagglehub
+
+# Download latest version
+path = kagglehub.dataset_download("samarwarsi/cmu-mosei")
+
+print("Path to dataset files:", path)
