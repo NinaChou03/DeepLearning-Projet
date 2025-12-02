@@ -156,6 +156,7 @@ pip install torch transformers librosa kagglehub scikit-learn matplotlib
 lancer dans google collab :
 
 MOSI_Deeplearning.ipynb 
+MELD_projet.ipynb
 
 
 Tout se charge automatiquement.
