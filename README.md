@@ -13,24 +13,19 @@ Comparaison des performances
 
 ## Structure du Dépôt
 
-multimodal-sentiment-analysis
+```
+multimodal-sentiment-analysis/
 │
-
-├── MELD_model.ipynb         # Code complet du modèle pour MELD
-
-├── MOSI_model.ipynb         # Code complet du modèle pour MOSI
-
+├── MELD_model.ipynb             # Notebook complet du modèle MELD
+├── MOSI_model.ipynb             # Notebook complet du modèle MOSI
 │
-
-├── models/                  # (optionnel) sauvegardes des modèles
-
-├── data/                    # téléchargée automatiquement (kagglehub)
-
+├── models/                      # Sauvegardes .pt
+├── data/                        # Données téléchargées automatiquement via kagglehub
 │
-
-├── Deep Learning - prez projet.pptx   # Présentation du projet
-
+├── requirements.txt             # Dépendances
+├── Deep Learning - prez projet.pptx
 └── README.md
+```
 
 ## Objectif du Projet
 
